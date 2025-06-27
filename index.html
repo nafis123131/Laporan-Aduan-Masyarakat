@@ -10,6 +10,10 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- library eksport pdf -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -694,14 +698,17 @@
                             results
                         </div>
                         <div class="flex space-x-2">
-                            <button id="prev-page"
+                                <button id="export-pdf-btn" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                Export to PDF
+                                </button>
+                            <!-- <button id="prev-page"
                                 class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                                 Previous
                             </button>
                             <button id="next-page"
                                 class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                                 Next
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                 </div>
@@ -1139,21 +1146,6 @@
         document.getElementById('status-filter').addEventListener('change', function () {
             // Ambil value filter dan filter data di tabel
             // Implementasi filter sesuai kebutuhan
-        });
-
-        //Kembali ke page sebelumnya
-        document.getElementById('prev-page').addEventListener('click', function () {
-            // Isi dengan logika untuk halaman sebelumnya
-            //alert('Previous page clicked!');
-        });
-        //lanjut ke page berikutnya
-        document.getElementById('next-page').addEventListener('click', function () {
-            // Isi dengan logika untuk halaman berikutnya
-            //alert('Next page clicked!');
-        });
-        // ...existing code...
-        document.getElementById('pengaduan-toggle').addEventListener('click', function () {
-            //document.getElementById('pengaduan-menu').classList.toggle('hidden');
         });
 
         // <!-- Script Navigasi Konten -->
