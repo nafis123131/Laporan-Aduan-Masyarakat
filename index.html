@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layanan Aspirasi dan Pengaduan Online Rakyat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .header-bg {
+            background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+        }
+
+        .form-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-top: 4px solid #e63946;
+        }
+
+        .btn-red {
+            background-color: #e63946;
+            transition: all 0.3s ease;
+        }
+
+        .btn-red:hover {
+            background-color: #c1121f;
+        }
+
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-item:hover {
+            background-color: rgba(230, 57, 70, 0.1);
+        }
+
+        .sidebar-item.active {
+            background-color: rgba(230, 57, 70, 0.2);
+            border-left: 4px solid #e63946;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-inprogress {
+            background-color: #bfdbfe;
+            color: #1e40af;
+        }
+
+        .status-resolved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 50;
+                height: 100vh;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+            }
+
+            .overlay.open {
+                display: block;
+            }
+        }
+
+        .tracking-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #e63946;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Public Page (Default) -->
+    <div id="public-page">
+        <!-- Public Header with Login Button -->
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <img class="h-14 w-auto" src="Untitled-1-01.png" alt="Logo">
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <button id="login-btn"
+                            class="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Masuk Admin
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <div class="header-bg text-white py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-3xl md:text-4xl font-bold mb-4">Layanan Aspirasi dan Pengaduan Online</h1>
+                <p class="text-lg md:text-xl mb-8">Sampaikan laporan Anda kepada pemerintah daerah dengan mudah dan
+                    transparan</p>
+                <div class="flex flex-col md:flex-row justify-center gap-4">
+                    <a href="#report-form"
+                        class="btn-red inline-block px-6 py-3 rounded-md font-medium text-white hover:bg-red-700 transition duration-300">
+                        <i class="fas fa-plus mr-2"></i> Buat Laporan Baru
+                    </a>
+                    <button id="track-report-btn"
+                        class="bg-white text-red-600 inline-block px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition duration-300">
+                        <i class="fas fa-search mr-2"></i> Lacak Laporan
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Public Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <!-- Report Tracking Section -->
+            <div id="track-report-section" class="hidden tracking-card w-full p-6 mb-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Lacak Status Laporan</h2>
+                    <p class="text-gray-600 mt-2">Masukkan ID laporan Anda untuk melihat status dan perkembangan</p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-grow">
+                        <label for="tracking-id" class="block text-sm font-medium text-gray-700 mb-1">ID Laporan
+                            *</label>
+                        <input type="text" id="tracking-id" name="tracking-id"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            placeholder="Contoh: RPT-001">
+                        <p id="tracking-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="track-btn"
+                            class="btn-red h-[42px] text-white px-6 py-2 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <i class="fas fa-search mr-2"></i> Lacak
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tracking Results -->
+                <div id="tracking-results" class="hidden mt-6 p-6 bg-gray-50 rounded-md border border-gray-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800" id="tracking-report-title">Jalan berlubang
+                                di depan sekolah</h3>
+                            <p class="text-sm text-gray-500 mt-1">ID: <span id="tracking-report-id"
+                                    class="font-medium">RPT-001</span></p>
+                        </div>
+                        <div>
+                            <span id="tracking-report-status"
+                                class="px-3 py-1 text-sm rounded-full status-draf">Draf</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <div>
+                            <p class="text-sm text-gray-500">Tanggal Dibuat</p>
+                            <p id="tracking-report-date" class="font-medium">15 Jun 2023</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Tipe Laporan</p>
+                            <p id="tracking-report-type" class="font-medium">Pengaduan</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Instansi Tujuan</p>
+                            <p id="tracking-report-agency" class="font-medium">Dinas Pekerjaan Umum</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500">Status Terkini</p>
+                        <div class="mt-1 p-3 bg-white border border-gray-200 rounded-md">
+                            <p id="tracking-report-status-details" class="text-gray-700">Laporan Anda sedang dalam
+                                proses verifikasi oleh petugas kami. Kami akan segera mengupdate status laporan ini.</p>
+                        </div>
+                    </div>
+
+                    <!-- <div class="mt-4">
+                        <p class="text-sm text-gray-500">Tanggapan Resmi</p>
+                        <div class="mt-1 p-3 bg-white border border-gray-200 rounded-md">
+                            <p id="tracking-report-response" class="text-gray-700">-</p>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+
+            <!-- Report Form -->
+            <div class="form-card bg-white rounded-lg overflow-hidden w-full p-6 md:p-8">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">Formulir Laporan</h2>
+                    <p class="text-gray-600 mt-2">Isi formulir berikut untuk menyampaikan laporan Anda</p>
+                </div>
+
+                <!-- Report Form -->
+                <form id="report-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap
+                                *</label>
+                            <input type="text" id="name" name="name"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                placeholder="Nama Anda" required>
+                            <p id="name-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                        </div>
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                            <input type="email" id="email" name="email"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                placeholder="email@example.com" required>
+                            <p id="email-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Jenis Laporan *</label>
+                        <select id="type" name="type"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            required>
+                            <option disabled selected>Pilih Jenis Laporan</option>
+                            <option value="Pengaduan">Pengaduan</option>
+                            <option value="Aspirasi">Aspirasi</option>
+                        </select>
+                        <p id="type-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div>
+
+                    <!-- <div id="aspiration-category-container" class="hidden">
+                        <label for="aspiration-category" class="block text-sm font-medium text-gray-700 mb-1">Kategori Aspirasi *</label>
+                        <select id="aspiration-category" name="aspiration-category"
+                                 class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <option value="">Pilih Kategori</option>
+                            <option value="infrastructure">Infrastruktur & Fasilitas Umum</option>
+                            <option value="education">Pendidikan</option>
+                            <option value="health">Kesehatan</option>
+                            <option value="environment">Lingkungan Hidup</option>
+                            <option value="economy">Perekonomian & UKM</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                        <p id="aspiration-category-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div> -->
+
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Judul Laporan *</label>
+                        <input type="text" id="title" name="title"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            placeholder="Judul singkat laporan Anda" required>
+                        <p id="title-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div>
+
+                    <div>
+                        <label for="content" class="block text-sm font-medium text-gray-700 mb-1">Isi Laporan *</label>
+                        <textarea id="content" name="content" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            placeholder="Deskripsi lengkap laporan Anda" required></textarea>
+                        <p id="content-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div>
+
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Lokasi Kejadian
+                            *</label>
+                        <input type="text" id="location" name="location"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            placeholder="Alamat atau lokasi kejadian" required>
+                        <p id="location-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div>
+
+                    <div>
+                        <label for="agency" class="block text-sm font-medium text-gray-700 mb-1">Instansi Tujuan
+                            *</label>
+                        <select id="agency" name="agency"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            required>
+                            <option disabled selected>Pilih Instansi</option>
+                            <option value="pu">Dinas Pekerjaan Umum</option>
+                            <option value="health">Dinas Kesehatan</option>
+                            <option value="education">Dinas Pendidikan</option>
+                            <option value="transportation">Dinas Perhubungan</option>
+                        </select>
+                        <p id="agency-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div>
+
+                    <div>
+                        <label for="attachment" class="block text-sm font-medium text-gray-700 mb-1">Lampiran
+                            (Opsional)</label>
+                        <div class="flex items-center space-x-4">
+                            <input type="file" id="attachment" name="attachment"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, PDF (Maks. 5MB)</p>
+                        <p id="attachment-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit"
+                            class="btn-red w-full text-white py-3 px-4 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <i class="fas fa-paper-plane mr-2"></i> KIRIM LAPORAN
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Submission Success Modal -->
+                <div id="success-modal" class="modal fixed inset-0 overflow-y-auto z-50 hidden">
+                    <div
+                        class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                        </div>
+
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
+                            aria-hidden="true">&#8203;</span>
+
+                        <div
+                            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <div class="sm:flex sm:items-start">
+                                    <div
+                                        class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                                        <i class="fas fa-check text-green-600"></i>
+                                    </div>
+                                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                            Laporan Berhasil Dikirim!
+                                        </h3>
+                                        <div class="mt-2">
+                                            <p class="text-sm text-gray-500">
+                                                Terima kasih atas laporan Anda. Kami akan segera menindaklanjuti laporan
+                                                ini.
+                                            </p>
+                                            <p id="report-id-display" class="mt-2 font-semibold"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="button" id="close-success-modal"
+                                    class="btn-red w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-white text-base font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Layanan Pengaduan</h3>
+                        <p class="text-gray-300">Sampaikan aspirasi dan pengaduan Anda kepada pemerintah daerah secara
+                            online.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Kontak</h3>
+                        <ul class="space-y-2 text-gray-300">
+                            <li><i class="fas fa-envelope mr-2"></i> pengaduan@example.com</li>
+                            <li><i class="fas fa-phone mr-2"></i> (021) 12345678</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Jam Operasional</h3>
+                        <ul class="space-y-2 text-gray-300">
+                            <li>Setiap Hari</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                    <p>&copy; 2025 Layanan Pengaduan Online. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+        <!-- Detail Laporan -->
+        <div id="modal-detail-laporan" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-lg relative">
+            <button id="close-detail-modal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            <h3 class="text-lg font-bold mb-4 text-center">Detail Laporan</h3>
+            <div class="space-y-2">
+            <div><span class="font-semibold">Nama Lengkap:</span> <span id="detail-nama"></span></div>
+            <div><span class="font-semibold">Email:</span> <span id="detail-email"></span></div>
+            <div><span class="font-semibold">Jenis Laporan:</span> <span id="detail-type"></span></div>
+            <div><span class="font-semibold">Judul Laporan:</span> <span id="detail-title"></span></div>
+            <div><span class="font-semibold">Isi Laporan:</span> <span id="detail-content"></span></div>
+            <div><span class="font-semibold">Lokasi Kejadian:</span> <span id="detail-location"></span></div>
+            <div><span class="font-semibold">Instansi Tujuan:</span> <span id="detail-agency"></span></div>
+            <div>
+                <span class="font-semibold">Lampiran:</span>
+                <span id="detail-attachment"></span>
+            </div>
+            </div>
+            <div class="mt-6 text-center">
+            <button id="close-detail-modal-btn" class="btn-red px-6 py-2 rounded text-white">Tutup</button>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Edit Laporan -->
+    <div id="modal-edit" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-lg relative">
+        <h3 class="text-lg font-bold mb-4 text-center">Edit Laporan</h3>
+        <form id="edit-form">
+        <input type="hidden" id="edit-id">
+        <div class="mb-3">
+            <label for="edit-jenis" class="block mb-1">Jenis Laporan</label>
+            <select id="edit-jenis" class="w-full border px-2 py-1 rounded" required>
+            <option disabled selected>Pilih Jenis Laporan</option>
+            <option value="Pengaduan">Pengaduan</option>
+            <option value="Aspirasi">Aspirasi</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="edit-instansi" class="block mb-1">Instansi Tujuan</label>
+            <select id="edit-instansi" class="w-full border px-2 py-1 rounded" required>
+            <option disabled selected>Silahkan Pilih Instansi</option>
+            <option value="Dinas Pekerjaan Umum">Dinas Pekerjaan Umum</option>
+            <option value="Dinas Kesehatan">Dinas Kesehatan</option>
+            <option value="Dinas Pendidikan">Dinas Pendidikan</option>
+            <option value="Dinas Perhubungan">Dinas Perhubungan</option>
+            </select>
+        </div>
+        <div class="flex gap-2 mt-4">
+            <button type="submit" class="btn-red px-4 py-2 rounded text-white">Update</button>
+            <button type="button" onclick="document.getElementById('modal-edit').classList.add('hidden')" class="px-4 py-2 rounded border">Tutup</button>
+        </div>
+        </form>
+    </div>
+    </div>
+    <!-- Admin Login Modal -->
+    <div id="login-modal" class="modal fixed inset-0 overflow-y-auto z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Admin Login
+                                </h3>
+                                <button type="button" class="close-login-modal-btn text-gray-400 hover:text-gray-500"
+                                    aria-label="Tutup">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <form id="admin-login-form" class="space-y-6">
+                                <div>
+                                    <label for="admin-email"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" id="admin-email" name="email"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                        placeholder="admin@example.com" required>
+                                    <p id="admin-email-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                                </div>
+
+                                <div>
+                                    <label for="admin-password"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                    <input type="password" id="admin-password" name="password"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                        placeholder="••••••••" required>
+                                    <p id="admin-password-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                                </div>
+
+                                <div class="flex space-x-3 pt-2">
+                                    <button type="submit"
+                                        class="btn-red w-full text-white py-2 px-4 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        <i class="fas fa-sign-in-alt mr-2"></i> Login
+                                    </button>
+                                    <button type="button"
+                                        class="close-login-modal-btn w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Admin Dashboard (Hidden by Default) -->
+    <div id="dashboard-page" class="hidden">
+        <!-- Sidebar Navigation -->
+        <div id="sidebar" class="sidebar bg-white w-64 fixed h-full shadow-md z-40">
+            <div class="p-4 border-b border-gray-200 flex items-center space-x-3">
+                <img class="h-10 w-auto" src="Untitled-1-01.png" alt="Logo">
+                <span class="font-bold text-gray-800">Admin Panel</span>
+            </div>
+            <div class="p-4">
+                <div class="space-y-1">
+                    <a href="#" id="dashboard-menu"
+                        class="sidebar-item active flex items-center space-x-3 p-3 rounded-md text-gray-700">
+                        <i class="fas fa-tachometer-alt w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <!-- Pengaduan Dropdown -->
+                    <div>
+                        <button type="button" id="pengaduan-toggle"
+                            class="w-full flex items-center justify-between p-3 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none">
+                            <span class="flex items-center space-x-3">
+                                <i class="fas fa-folder-open w-5"></i>
+                                <span>Pengaduan</span>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div id="pengaduan-menu" class="ml-8 mt-1 space-y-1 hidden">
+                            <a href="#" id="menu-masuk"
+                                class="block px-2 py-1 rounded hover:bg-red-100 text-red-700 font-semibold">Masuk</a>
+                            <a href="#" id="menu-proses" class="block px-2 py-1 rounded hover:bg-gray-100">Proses</a>
+                            <a href="#" id="menu-selesai" class="block px-2 py-1 rounded hover:bg-gray-100">Selesai</a>
+                        </div>
+                    </div>
+                    <a href="#" id="logout-btn"
+                        class="sidebar-item flex items-center space-x-3 p-3 rounded-md text-gray-700">
+                        <i class="fas fa-sign-out-alt w-5"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                        <i class="fas fa-user text-red-600"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium text-gray-800">Admin User</div>
+                        <div class="text-xs text-gray-500">Super Admin</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="md:ml-64 min-h-screen">
+            <!-- Top Navigation -->
+            <nav class="bg-white shadow-sm">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between h-16">
+                        <div class="flex items-center">
+                            <h1 class="text-lg font-semibold text-gray-800">Dashboard</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="relative">
+                                <button class="p-1 rounded-full text-gray-500 hover:text-gray-700 focus:outline-none"
+                                    aria-label="Notifikasi">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                                <span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Dashboard utama (statistik, recent reports) -->
+            <main id="dashboard-main" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500">Total Reports</p>
+                                <h3 id="total-reports" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-red-100 text-red-600">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 ">Draf</p>
+                                <h3 id="pending-reports" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500">In Progress</p>
+                                <h3 id="inprogress-reports" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                                <i class="fas fa-spinner"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500">Resolved</p>
+                                <h3 id="resolved-reports" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-green-100 text-green-600">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Reports Table -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div
+                        class="p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0">
+                        <h2 class="text-lg font-semibold text-gray-800">Recent Reports</h2>
+                        <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full md:w-auto">
+                            <div class="relative">
+                                <input type="text" id="search-reports" placeholder="Search reports..."
+                                    class="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <button class="absolute right-3 top-2.5 text-gray-400" aria-label="Cari">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <select id="status-filter" aria-label="Filter Status"
+                                class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <option value="">All Status</option>
+                                <option value="draf">Draf</option>
+                                <option value="inprogress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                        ATTACHMENT</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Reports will be loaded dynamically here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                        <div class="text-sm text-gray-500">
+                            Showing <span id="showing-from" class="font-medium">0</span> to <span id="showing-to"
+                                class="font-medium">0</span> of <span id="total-items" class="font-medium">0</span>
+                            results
+                        </div>
+                        <div class="flex space-x-2">
+                            <button id="prev-page"
+                                class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                Previous
+                            </button>
+                            <button id="next-page"
+                                class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <!-- Tabel laporan Masuk (AWALNYA HIDDEN) -->
+            <main id="masuk-list" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
+                <h2 class="text-lg font-semibold mb-4">Laporan Masuk</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TITLE</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TYPE</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">DATE</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">STATUS</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ATTACHMENT
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="masuk-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Isi laporan akan diisi lewat JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        Showing <span id="showing-from-masuk" class="font-medium">0</span> to <span
+                            id="showing-to-masuk" class="font-medium">0</span> of <span id="total-items-masuk"
+                            class="font-medium">0</span> results
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prev-page-masuk"
+                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </button>
+                        <button id="next-page-masuk"
+                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </main>
+            <!-- Tabel laporan Proses (AWALNYA HIDDEN) -->
+            <main id="proses-list" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
+                <h2 class="text-lg font-semibold mb-4">Laporan Proses</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TITLE</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TYPE</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">DATE</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">STATUS</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ATTACHMENT
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proses-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Isi laporan proses akan diisi lewat JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        Showing <span id="showing-from-proses" class="font-medium">0</span> to <span
+                            id="showing-to-proses" class="font-medium">0</span> of <span id="total-items-proses"
+                            class="font-medium">0</span> results
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prev-page-proses"
+                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </button>
+                        <button id="next-page-proses"
+                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Tabel laporan Selesai (AWALNYA HIDDEN) -->
+            <main id="selesai-list" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
+                <h2 class="text-lg font-semibold mb-4">Laporan Selesai</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TITLE</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TYPE</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">DATE</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">STATUS</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ATTACHMENT
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="selesai-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Isi laporan selesai akan diisi lewat JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        Showing <span id="showing-from-selesai" class="font-medium">0</span> to <span
+                            id="showing-to-selesai" class="font-medium">0</span> of <span id="total-items-selesai"
+                            class="font-medium">0</span> results
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prev-page-selesai"
+                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </button>
+                        <button id="next-page-selesai"
+                            class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        // filepath: c:\xampp\htdocs\FinalProject15\index.html
+
+        // --- SUBMIT FORM LAPORAN ---
+        document.getElementById('report-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+
+            // Upload attachment jika ada
+            let attachmentName = '';
+            const attachmentInput = document.getElementById('attachment');
+            if (attachmentInput.files.length > 0) {
+                const uploadData = new FormData();
+                uploadData.append('attachment', attachmentInput.files[0]);
+                const uploadRes = await fetch('uploud_attachment.php', { method: 'POST', body: uploadData });
+                const uploadJson = await uploadRes.json();
+                if (uploadJson.success) {
+                    attachmentName = uploadJson.file;
+                } else {
+                    alert(uploadJson.message || 'Gagal upload lampiran');
+                    return;
+                }
+            }
+
+            // Tambahkan nama file lampiran ke formData
+            formData.append('attachment', attachmentName);
+
+            // Kirim data laporan ke PHP
+            const res = await fetch('submit_report.php', { method: 'POST', body: formData });
+            const json = await res.json();
+            if (json.success) {
+                document.getElementById('success-modal').classList.remove('hidden');
+                document.getElementById('report-id-display').innerHTML = `
+                    <span class="block text-gray-500 text-sm mb-1">ID Laporan Anda</span>
+                    <span class="text-lg font-bold text-red-600 tracking-wider">RPT-${json.report_id}</span>
+                `;
+                form.reset();
+            } else {
+                            alert(json.message || 'Gagal mengirim laporan');
+                        }
+                    });
+        // button lacak laporan
+        document.getElementById('track-report-btn').addEventListener('click', function () {
+            document.getElementById('track-report-section').classList.remove('hidden');
+            // Scroll ke section tracking jika ingin
+            document.getElementById('track-report-section').scrollIntoView({ behavior: 'smooth' });
+        });
+                function getAgencyFullName(code) {
+            switch (code) {
+                case 'pu':
+                case 'Dinas Pekerjaan Umum':
+                    return 'Dinas Pekerjaan Umum';
+                case 'health':
+                case 'Dinas Kesehatan':
+                    return 'Dinas Kesehatan';
+                case 'education':
+                case 'Dinas Pendidikan':
+                    return 'Dinas Pendidikan';
+                case 'transportation':
+                case 'Dinas Perhubungan':
+                    return 'Dinas Perhubungan';
+                default:
+                    return code;
+            }
+        }
+        //lanjutan button lacak laporan
+        document.getElementById('track-btn').addEventListener('click', async function () {
+            const trackingIdInput = document.getElementById('tracking-id');
+            let trackingId = trackingIdInput.value.trim();
+
+            // Ambil angka ID dari format RPT-001 dst
+            if (trackingId.startsWith('RPT-')) {
+                trackingId = trackingId.replace('RPT-', '');
+            }
+
+            if (!trackingId) {
+                document.getElementById('tracking-error').textContent = 'ID Laporan harus diisi!';
+                document.getElementById('tracking-error').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('tracking-error').classList.add('hidden');
+            }
+
+            // Fetch data laporan dari backend
+            const res = await fetch('get_report.php?id=' + encodeURIComponent(trackingId));
+            const json = await res.json();
+
+            
+            if (json.success && json.report) {
+                const report = json.report;
+                document.getElementById('tracking-results').classList.remove('hidden');
+                document.getElementById('tracking-report-title').textContent = report.title;
+                document.getElementById('tracking-report-id').textContent = 'RPT-' + report.id;
+                document.getElementById('tracking-report-status').textContent = report.status;
+                document.getElementById('tracking-report-type').textContent = report.type;
+                document.getElementById('tracking-report-agency').textContent = getAgencyFullName(report.agency);
+                document.getElementById('tracking-report-date').textContent = report.created_at;
+                document.getElementById('tracking-report-status-details').textContent = report.status; // Atur sesuai kebutuhan
+                document.getElementById('tracking-report-response').textContent = report.response || '-';
+            } else {
+                document.getElementById('tracking-results').classList.add('hidden');
+                document.getElementById('tracking-error').textContent = json.message || 'Laporan tidak ditemukan!';
+                document.getElementById('tracking-error').classList.remove('hidden');
+            }
+        });
+        // --- ADMIN LOGIN MODAL ---
+        document.getElementById('login-btn').addEventListener('click', function () {
+            document.getElementById('login-modal').classList.remove('hidden');
+        });
+        document.querySelectorAll('.close-login-modal-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.getElementById('login-modal').classList.add('hidden');
+            });
+        });
+        document.getElementById('close-success-modal').addEventListener('click', function () {
+            document.getElementById('success-modal').classList.add('hidden');
+        });
+                // --- LOAD DASHBOARD DATA ---
+            async function loadDashboardData() {
+            // Ambil data laporan dari backend
+            const res = await fetch('get_reports.php');
+            const json = await res.json();
+            if (json.success) {
+                // Filter data sesuai status
+                const statusFilter = document.getElementById('status-filter').value;
+                let filteredReports = json.reports;
+                if (statusFilter) {
+                    filteredReports = json.reports.filter(r => r.status === statusFilter);
+                }
+                // Filter search
+                const searchValue = document.getElementById('search-reports').value.trim().toLowerCase();
+                if (searchValue) {
+                    filteredReports = filteredReports.filter(r =>
+                        r.title && r.title.toLowerCase().includes(searchValue)
+                    );
+                }
+                // Update statistik
+                document.getElementById('total-reports').textContent = json.reports.length;
+                document.getElementById('pending-reports').textContent = json.reports.filter(r => r.status === 'draf').length;
+                document.getElementById('resolved-reports').textContent = json.reports.filter(r => r.status === 'resolved').length;
+                document.getElementById('inprogress-reports').textContent = json.reports.filter(
+                    r => r.status === 'inprogress' || r.status === 'proses'
+                ).length;
+
+                // Tampilkan data di tabel
+                const tbody = document.getElementById('reports-table-body');
+                tbody.innerHTML = '';
+                filteredReports.forEach(report => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">RPT-${report.id}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${report.title}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${report.type}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${report.created_at}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${report.status}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${
+                                report.attachment
+                                    ? `<a href="uploads/${report.attachment}" target="_blank">
+                                            <img src="uploads/${report.attachment}" alt="Lampiran" class="h-12 w-12 object-cover rounded" />
+                                    </a>`
+                                    : '-'
+                            }
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button class="btn-view bg-yellow-500 hover:bg-yellow-700 text-white px-3 py-1 rounded"
+                                data-id="${report.id}">
+                                <i class="fas fa-eye"></i> 
+                            </button>
+                            <button class="btn-edit bg-green-500 hover:bg-green-700 text-white px-3 py-1 rounded" data-id="${report.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-delete bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-id="${report.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Event listener untuk tombol View
+                document.querySelectorAll('.btn-view').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        lihatLaporan(id);
+                    });
+                });
+
+                // Event listener untuk tombol Delete
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        if (confirm('Yakin ingin menghapus laporan ini?')) {
+                            fetch('delete_report.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: `id=${encodeURIComponent(id)}`
+                            })
+                            .then(res => res.json())
+                            .then(json => {
+                                if (json.success) {
+                                    alert('Laporan berhasil dihapus!');
+                                    loadDashboardData();
+                                } else {
+                                    alert(json.message || 'Gagal menghapus laporan');
+                                }
+                            });
+                        }
+                    });
+                });
+
+                // Event listener untuk tombol Edit
+                document.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        fetch(`show_report.php?id=${id}`)
+                            .then(res => res.json())
+                            .then(json => {
+                                if (json.success && json.report) {
+                                    const report = json.report;
+                                    document.getElementById('edit-id').value = report.id;
+                                    document.getElementById('edit-jenis').value = report.type || '';
+                                    document.getElementById('edit-instansi').value = report.agency || '';
+                                    document.getElementById('modal-edit').classList.remove('hidden');
+                                } else {
+                                    alert(json.message || 'Laporan tidak ditemukan');
+                                }
+                            });
+                    });
+                });
+
+                // Update info paging
+                document.getElementById('showing-from').textContent = filteredReports.length > 0 ? 1 : 0;
+                document.getElementById('showing-to').textContent = filteredReports.length;
+                document.getElementById('total-items').textContent = filteredReports.length;
+            }
+        }
+
+        // Event listener filter status (cukup satu kali, di luar fungsi)
+        document.getElementById('status-filter').addEventListener('change', function () {
+            loadDashboardData();
+        });
+        // Event listener untuk input pencarian
+        document.getElementById('search-reports').addEventListener('input', function () {
+            loadDashboardData();
+        });
+        document.getElementById('edit-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const type = document.getElementById('edit-jenis').value;
+            const agency = document.getElementById('edit-instansi').value;
+
+            fetch('proses_update_report.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}&agency=${encodeURIComponent(agency)}`
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success) {
+                        document.getElementById('modal-edit').classList.add('hidden');
+                        alert('Laporan berhasil diupdate!');
+                        loadDashboardData(); // Refresh tabel
+                    } else {
+                        alert(json.message || 'Gagal update laporan');
+                    }
+                });
+        });
+        // --- PROSES LOGIN ADMIN ---
+        document.getElementById('admin-login-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+
+            const formData = new FormData();
+            formData.append('email', email); // Pastikan kolom di DB: username/email
+            formData.append('password', password);
+
+            const res = await fetch('admin_login.php', { method: 'POST', body: formData });
+            const json = await res.json();
+
+            if (json.success) {
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('public-page').classList.add('hidden');
+                document.getElementById('dashboard-page').classList.remove('hidden');
+                loadDashboardData(); // Fungsi untuk memuat data dashboard
+            } else {
+                document.getElementById('admin-email-error').textContent = json.message || 'Login gagal';
+                document.getElementById('admin-email-error').classList.remove('hidden');
+            }
+        });
+        // bagian dasboard
+        // Tombol Logout
+        document.getElementById('logout-btn').addEventListener('click', function () {
+            document.getElementById('dashboard-page').classList.add('hidden');
+            document.getElementById('public-page').classList.remove('hidden');
+            // Jika ingin hapus session, tambahkan AJAX ke logout.php
+        });
+
+        // Tombol Search Reports
+        document.getElementById('search-reports').addEventListener('input', function () {
+            // Ambil value pencarian dan filter data di tabel
+            // Implementasi pencarian sesuai kebutuhan
+        });
+
+        // Dropdown Filter Status
+        document.getElementById('status-filter').addEventListener('change', function () {
+            // Ambil value filter dan filter data di tabel
+            // Implementasi filter sesuai kebutuhan
+        });
+
+        //Kembali ke page sebelumnya
+        document.getElementById('prev-page').addEventListener('click', function () {
+            // Isi dengan logika untuk halaman sebelumnya
+            //alert('Previous page clicked!');
+        });
+        //lanjut ke page berikutnya
+        document.getElementById('next-page').addEventListener('click', function () {
+            // Isi dengan logika untuk halaman berikutnya
+            //alert('Next page clicked!');
+        });
+        // ...existing code...
+        document.getElementById('pengaduan-toggle').addEventListener('click', function () {
+            //document.getElementById('pengaduan-menu').classList.toggle('hidden');
+        });
+
+        // <!-- Script Navigasi Konten -->
+        // Sidebar Pengaduan Dropdown
+        document.getElementById('pengaduan-toggle').addEventListener('click', function () {
+            document.getElementById('pengaduan-menu').classList.toggle('hidden');
+        });
+
+        function setActiveMenu(menuId) {
+            // Hapus class active dari semua menu
+            document.getElementById('menu-masuk').classList.remove('text-red-700', 'font-semibold');
+            document.getElementById('menu-proses').classList.remove('text-red-700', 'font-semibold');
+            document.getElementById('menu-selesai').classList.remove('text-red-700', 'font-semibold');
+            // Tambahkan class active ke menu yang dipilih
+            document.getElementById(menuId).classList.add('text-red-700', 'font-semibold');
+        }
+
+        // Untuk Masuk
+        document.getElementById('menu-masuk').addEventListener('click', function () {
+            setActiveMenu('menu-masuk');
+            document.getElementById('dashboard-main').classList.add('hidden');
+            document.getElementById('masuk-list').classList.remove('hidden');
+            document.getElementById('proses-list').classList.add('hidden');
+            document.getElementById('selesai-list').classList.add('hidden');
+            
+            fetch('get_reports.php?status=draf')
+                .then(res => res.json())
+                .then(json => {
+                    const tbody = document.getElementById('masuk-table-body');
+                    tbody.innerHTML = '';
+                    json.reports.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                        <td class="px-6 py-4">${item.id}</td>
+                        <td class="px-6 py-4">${item.title}</td>
+                        <td class="px-6 py-4">${item.type}</td>
+                        <td class="px-6 py-4">${item.created_at}</td>
+                        <td class="px-6 py-4">
+                            <select class="status-select border rounded px-2 py-1" data-id="${item.id}">
+                            <option value="draf" ${item.status === 'draf' ? 'selected' : ''}>draf</option>
+                            <option value="inprogress" ${item.status === 'inprogress' ? 'selected' : ''}>proses</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4">
+                            ${item.attachment
+                            ? `<a href="uploads/${item.attachment}" target="_blank">
+                                    <img src="uploads/${item.attachment}" alt="Lampiran" class="h-12 w-12 object-cover rounded" />
+                                </a>`
+                            : '-'
+                            }
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex gap-2">
+                            <button class="btn-view bg-yellow-500 hover:bg-yellow-700 text-white px-3 py-1 rounded" data-id="${item.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-edit bg-green-500 hover:bg-green-700 text-white px-3 py-1 rounded" data-id="${item.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-delete bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-id="${item.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            </div>
+                        </td>
+                        </tr>
+                    `;
+                    });
+                    // Update paging
+                    document.getElementById('showing-from-masuk').textContent = json.reports.length > 0 ? 1 : 0;
+                    document.getElementById('showing-to-masuk').textContent = json.reports.length;
+                    document.getElementById('total-items-masuk').textContent = json.reports.length;
+                    addStatusListenerMasuk();
+                    addActionListenersMasuk();
+                });
+        });
+
+        // Untuk Proses
+        document.getElementById('menu-proses').addEventListener('click', function () {
+            setActiveMenu('menu-proses');
+            document.getElementById('dashboard-main').classList.add('hidden');
+            document.getElementById('masuk-list').classList.add('hidden');
+            document.getElementById('proses-list').classList.remove('hidden');
+            document.getElementById('selesai-list').classList.add('hidden');
+
+            fetch('get_reports.php?status=inprogress')
+                .then(res => res.json())
+                .then(json => {
+                    const tbody = document.getElementById('proses-table-body');
+                    tbody.innerHTML = '';
+                    json.reports.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="px-6 py-4">${item.id}</td>
+                            <td class="px-6 py-4">${item.title}</td>
+                            <td class="px-6 py-4">${item.type}</td>
+                            <td class="px-6 py-4">${item.created_at}</td>
+                            <td class="px-6 py-4">
+                                <select class="status-select border rounded px-2 py-1" data-id="${item.id}">
+                                    <option value="inprogress" ${item.status === 'inprogress' ? 'selected' : ''}>proses</option>
+                                    <option value="resolved" ${item.status === 'resolved' ? 'selected' : ''}>selesai</option>
+                                </select>
+                            </td>
+                            <td class="px-6 py-4">
+                                ${item.attachment
+                                    ? `<a href="uploads/${item.attachment}" target="_blank">
+                                            <img src="uploads/${item.attachment}" alt="Lampiran" class="h-12 w-12 object-cover rounded" />
+                                    </a>`
+                                    : '-'
+                                }
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex gap-2">
+                                    <button class="btn-view bg-yellow-500 hover:bg-yellow-700 text-white px-3 py-1 rounded" data-id="${item.id}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn-edit bg-green-500 hover:bg-green-700 text-white px-3 py-1 rounded" data-id="${item.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-delete bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-id="${item.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                    // Update paging
+                    document.getElementById('showing-from-proses').textContent = json.reports.length > 0 ? 1 : 0;
+                    document.getElementById('showing-to-proses').textContent = json.reports.length;
+                    document.getElementById('total-items-proses').textContent = json.reports.length;
+                    addStatusListenerProses();
+                    addActionListenersProses();
+                });
+        });
+
+        // Untuk Selesai
+        document.getElementById('menu-selesai').addEventListener('click', function () {
+            setActiveMenu('menu-selesai');
+            document.getElementById('dashboard-main').classList.add('hidden');
+            document.getElementById('masuk-list').classList.add('hidden');
+            document.getElementById('proses-list').classList.add('hidden');
+            document.getElementById('selesai-list').classList.remove('hidden');
+
+            fetch('get_reports.php?status=resolved')
+                .then(res => res.json())
+                .then(json => {
+                    const tbody = document.getElementById('selesai-table-body');
+                    tbody.innerHTML = '';
+                    json.reports.forEach(item => {
+                        tbody.innerHTML += `
+                    <tr>
+                      <td class="px-6 py-4">${item.id}</td>
+                      <td class="px-6 py-4">${item.title}</td>
+                      <td class="px-6 py-4">${item.type}</td>
+                      <td class="px-6 py-4">${item.created_at}</td>
+                      <td class="px-6 py-4">${item.status}</td>
+                      <td class="px-6 py-4">
+                        ${item.attachment
+                                ? `<a href="uploads/${item.attachment}" target="_blank">
+                                        <img src="uploads/${item.attachment}" alt="Lampiran" class="h-12 w-12 object-cover rounded" />
+                                </a>`
+                                : '-'
+                        }
+                            </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                            <button class="btn-delete bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded" data-id="${item.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                    });
+                    // Update paging
+                    document.getElementById('showing-from-selesai').textContent = json.reports.length > 0 ? 1 : 0;
+                    document.getElementById('showing-to-selesai').textContent = json.reports.length;
+                    document.getElementById('total-items-selesai').textContent = json.reports.length;
+                    addActionListenersSelesai();
+                });
+        });
+
+        document.getElementById('prev-page-masuk').addEventListener('click', function () {
+            // Isi logika untuk halaman sebelumnya pada tab Masuk
+            alert('Previous page Masuk clicked!');
+        });
+        document.getElementById('next-page-masuk').addEventListener('click', function () {
+            // Isi logika untuk halaman berikutnya pada tab Masuk
+            alert('Next page Masuk clicked!');
+        });
+        document.getElementById('prev-page-proses').addEventListener('click', function () {
+            // Isi logika untuk halaman sebelumnya pada tab Proses
+            alert('Previous page Proses clicked!');
+        });
+        document.getElementById('next-page-proses').addEventListener('click', function () {
+            // Isi logika untuk halaman berikutnya pada tab Proses
+            alert('Next page Proses clicked!');
+        });
+        document.getElementById('prev-page-selesai').addEventListener('click', function () {
+            // Isi logika untuk halaman sebelumnya pada tab Selesai
+            alert('Previous page Selesai clicked!');
+        });
+        document.getElementById('next-page-selesai').addEventListener('click', function () {
+            // Isi logika untuk halaman berikutnya pada tab Selesai
+            alert('Next page Selesai clicked!');
+        });
+
+        document.getElementById('dashboard-menu').addEventListener('click', function () {
+            // Tidak perlu setActiveMenu di dashboard
+            document.getElementById('dashboard-main').classList.remove('hidden');
+            document.getElementById('masuk-list').classList.add('hidden');
+            document.getElementById('proses-list').classList.add('hidden');
+            document.getElementById('selesai-list').classList.add('hidden');
+            // ...fetch data dashboard...
+            
+                
+                    // .then(json => {
+                    //     if (json.success) {
+                    //         closeModal('modal-edit');
+                    //     } else {
+                    //         document.getElementById('edit-warning').textContent = json.message || 'Gagal update laporan';
+                    //         document.getElementById('edit-warning').classList.remove('hidden');
+                    //     }
+                    // });
+                });
+
+        //Function untuk melihat laporan
+        function lihatLaporan(id) {
+        fetch(`show_report.php?id=${id}`)
+        .then(res => res.json())
+        .then(json => {
+            if (json.success && json.report) {
+                const report = json.report;
+                document.getElementById('detail-nama').textContent = report.name || '-';
+                document.getElementById('detail-email').textContent = report.email || '-';
+                document.getElementById('detail-type').textContent = report.type || '-';
+                document.getElementById('detail-title').textContent = report.title || '-';
+                document.getElementById('detail-content').textContent = report.content || '-';
+                document.getElementById('detail-location').textContent = report.location || '-';
+                document.getElementById('detail-agency').textContent = report.agency || '-';
+                if (report.attachment) {
+                    document.getElementById('detail-attachment').innerHTML =
+                        `<a href="uploads/${report.attachment}" target="_blank" class="text-blue-600 underline">Lihat Lampiran</a>`;
+                } else {
+                    document.getElementById('detail-attachment').textContent = '-';
+                }
+                document.getElementById('modal-detail-laporan').classList.remove('hidden');
+                } else {
+                alert(json.message || 'Laporan tidak ditemukan');
+                }
+            });
+        }
+
+// Event listener status-select di menu Masuk
+        function addStatusListenerMasuk() {
+            document.querySelectorAll('#masuk-table-body .status-select').forEach(select => {
+                select.addEventListener('change', function () {
+                    const id = this.getAttribute('data-id');
+                    const newStatus = this.value;
+                    if (confirm('Apakah anda ingin mengubah status laporan ini?')) {
+                        fetch('update_status_masuk.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `id=${encodeURIComponent(id)}&status=${encodeURIComponent(newStatus)}`
+                        })
+                        .then(res => res.json())
+                        .then(json => {
+                            if (json.success) {
+                                alert('Status laporan berhasil diubah!');
+                                // Reload menu sesuai status baru
+                                if (newStatus === 'draf') {
+                                    document.getElementById('menu-masuk').click();
+                                } else if (newStatus === 'inprogress') {
+                                    document.getElementById('menu-proses').click();
+                                } else if (newStatus === 'resolved') {
+                                    document.getElementById('menu-selesai').click();
+                                }
+                            } else {
+                                alert(json.message || 'Gagal mengubah status laporan');
+                                this.value = this.getAttribute('data-current');
+                            }
+                        });
+                    } else {
+                        // Kembalikan ke value sebelumnya jika batal
+                        this.value = this.getAttribute('data-current');
+                    }
+                });
+                // Simpan value awal untuk rollback jika batal
+                select.setAttribute('data-current', select.value);
+            });
+        }
+
+// Event listener status-select di menu Proses
+        function addStatusListenerProses() {
+            document.querySelectorAll('#proses-table-body .status-select').forEach(select => {
+                select.addEventListener('change', function () {
+                    const id = this.getAttribute('data-id');
+                    const newStatus = this.value;
+                    if (confirm('Apakah anda ingin mengubah status laporan ini?')) {
+                        fetch('update_status_masuk.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `id=${encodeURIComponent(id)}&status=${encodeURIComponent(newStatus)}`
+                        })
+                        .then(res => res.json())
+                        .then(json => {
+                            if (json.success) {
+                                alert('Status laporan berhasil diubah!');
+                                if (newStatus === 'inprogress') {
+                                    document.getElementById('menu-proses').click();
+                                } else if (newStatus === 'resolved') {
+                                    document.getElementById('menu-selesai').click();
+                                }
+                            } else {
+                                alert(json.message || 'Gagal mengubah status laporan');
+                                this.value = this.getAttribute('data-current');
+                            }
+                        });
+                    } else {
+                        this.value = this.getAttribute('data-current');
+                    }
+                });
+                select.setAttribute('data-current', select.value);
+            });
+        }
+
+        // Tutup modal detail
+        document.getElementById('close-detail-modal').onclick =
+        document.getElementById('close-detail-modal-btn').onclick = function() {
+        document.getElementById('modal-detail-laporan').classList.add('hidden');
+        };
+        // Tambahkan setelah render tabel di menu Masuk
+function addActionListenersMasuk() {
+    document.querySelectorAll('#masuk-table-body .btn-view').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            lihatLaporan(id);
+        });
+    });
+    document.querySelectorAll('#masuk-table-body .btn-edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            fetch(`show_report.php?id=${id}`)
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success && json.report) {
+                        const report = json.report;
+                        document.getElementById('edit-id').value = report.id;
+                        document.getElementById('edit-jenis').value = report.type || '';
+                        document.getElementById('edit-instansi').value = report.agency || '';
+                        document.getElementById('modal-edit').classList.remove('hidden');
+                    } else {
+                        alert(json.message || 'Laporan tidak ditemukan');
+                    }
+                });
+        });
+    });
+    document.querySelectorAll('#masuk-table-body .btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            if (confirm('Yakin ingin menghapus laporan ini?')) {
+                fetch('delete_report.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id=${encodeURIComponent(id)}`
+                })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success) {
+                        alert('Laporan berhasil dihapus!');
+                        document.getElementById('menu-masuk').click();
+                    } else {
+                        alert(json.message || 'Gagal menghapus laporan');
+                    }
+                });
+            }
+        });
+    });
+}
+
+// Tambahkan setelah render tabel di menu Proses
+function addActionListenersProses() {
+    document.querySelectorAll('#proses-table-body .btn-view').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            lihatLaporan(id);
+        });
+    });
+    document.querySelectorAll('#proses-table-body .btn-edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            fetch(`show_report.php?id=${id}`)
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success && json.report) {
+                        const report = json.report;
+                        document.getElementById('edit-id').value = report.id;
+                        document.getElementById('edit-jenis').value = report.type || '';
+                        document.getElementById('edit-instansi').value = report.agency || '';
+                        document.getElementById('modal-edit').classList.remove('hidden');
+                    } else {
+                        alert(json.message || 'Laporan tidak ditemukan');
+                    }
+                });
+        });
+    });
+    document.querySelectorAll('#proses-table-body .btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            if (confirm('Yakin ingin menghapus laporan ini?')) {
+                fetch('delete_report.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id=${encodeURIComponent(id)}`
+                })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success) {
+                        alert('Laporan berhasil dihapus!');
+                        document.getElementById('menu-proses').click();
+                    } else {
+                        alert(json.message || 'Gagal menghapus laporan');
+                    }
+                });
+            }
+        });
+    });
+}
+
+// Tambahkan setelah render tabel di menu Selesai
+function addActionListenersSelesai() {
+    document.querySelectorAll('#selesai-table-body .btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            if (confirm('Yakin ingin menghapus laporan ini?')) {
+                fetch('delete_report.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `id=${encodeURIComponent(id)}`
+                })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success) {
+                        alert('Laporan berhasil dihapus!');
+                        document.getElementById('menu-selesai').click();
+                    } else {
+                        alert(json.message || 'Gagal menghapus laporan');
+                    }
+                });
+            }
+        });
+    });
+}
+    </script>
+    <script>
+        feather.replace();
+    </script>
+</body>
+
+</html>
