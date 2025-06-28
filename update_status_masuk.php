@@ -1,5 +1,5 @@
 <?php
-// filepath: c:\xampp\htdocs\Baru\FinalProject15\update_status.php
+ //filepath: c:\xampp\htdocs\Baru\FinalProject15\update_status.php
 header('Content-Type: application/json');
 $conn = new mysqli("localhost", "root", "", "pengaduan");
 if ($conn->connect_error) {
@@ -21,4 +21,4 @@ if ($stmt->execute()) {
 }
 $stmt->close();
 $conn->close();
-?>
+?> 
