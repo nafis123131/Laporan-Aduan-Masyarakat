@@ -14,6 +14,7 @@
     <!-- library eksport pdf -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -698,9 +699,9 @@
                             results
                         </div>
                         <div class="flex space-x-2">
-                                <button id="export-pdf-btn" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                <!-- <button id="export-pdf-btn" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                                 Export to PDF
-                                </button>
+                                </button> -->
                             <!-- <button id="prev-page"
                                 class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                                 Previous
@@ -742,14 +743,14 @@
                             class="font-medium">0</span> results
                     </div>
                     <div class="flex space-x-2">
-                        <button id="prev-page-masuk"
+                        <!-- <button id="prev-page-masuk"
                             class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             Previous
                         </button>
                         <button id="next-page-masuk"
                             class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             Next
-                        </button>
+                        </button> -->
                     </div>
                 </div>
             </main>
@@ -782,14 +783,14 @@
                             class="font-medium">0</span> results
                     </div>
                     <div class="flex space-x-2">
-                        <button id="prev-page-proses"
+                        <!-- <button id="prev-page-proses"
                             class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             Previous
                         </button>
                         <button id="next-page-proses"
                             class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             Next
-                        </button>
+                        </button> -->
                     </div>
                 </div>
             </main>
@@ -823,14 +824,17 @@
                             class="font-medium">0</span> results
                     </div>
                     <div class="flex space-x-2">
-                        <button id="prev-page-selesai"
+                        <button id="export-pdf-btn" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                Export to PDF
+                                </button>
+                        <!-- <button id="prev-page-selesai"
                             class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             Previous
                         </button>
                         <button id="next-page-selesai"
                             class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             Next
-                        </button>
+                        </button> -->
                     </div>
                 </div>
             </main>
@@ -1597,6 +1601,90 @@ function addActionListenersSelesai() {
         });
     });
 }
+
+document.getElementById('export-pdf-btn').addEventListener('click', function () {
+    const rows = [];
+    document.querySelectorAll('#reports-table-body tr').forEach(tr => {
+        const cells = tr.querySelectorAll('td');
+        let attachmentCell = cells[5];
+        let attachmentContent = '-';
+        if (attachmentCell) {
+            const img = attachmentCell.querySelector('img');
+            if (img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+                if (img.src.startsWith('data:image')) {
+                    attachmentContent = img.src;
+                } else {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    attachmentContent = canvas.toDataURL('image/png');
+                }
+            }
+        }
+        rows.push([
+            cells[0]?.innerText || '',
+            cells[1]?.innerText || '',
+            cells[2]?.innerText || '',
+            cells[3]?.innerText || '',
+            cells[4]?.innerText || '',
+            attachmentContent
+        ]);
+    });
+
+    const headers = ['ID', 'Title', 'Type', 'Date', 'Status', 'Attachment'];
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text('Data Laporan Masuk', 14, 14);
+
+    doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: 20,
+        styles: { font: 'helvetica', fontSize: 10, valign: 'middle' },
+        columnStyles: {
+            0: { valign: 'middle' },
+            1: { valign: 'middle' },
+            2: { valign: 'middle' },
+            3: { valign: 'middle' },
+            4: { valign: 'middle' },
+            5: { cellWidth: 30, valign: 'middle' } // Lebar kolom lampiran & tengah
+        },
+        didDrawCell: function (data) {
+            if (
+                data.column.index === 5 &&
+                typeof data.cell.raw === 'string' &&
+                data.cell.raw.startsWith('data:image')
+            ) {
+                // Hitung posisi tengah baris
+                const cellHeight = data.row.height;
+                const imgHeight = 60;
+                const yOffset = data.cell.y + (cellHeight - imgHeight) / 2;
+                doc.addImage(
+                    data.cell.raw,
+                    'PNG',
+                    data.cell.x + 2,
+                    yOffset > data.cell.y ? yOffset : data.cell.y + 2,
+                    24, // width gambar
+                    24  // height gambar
+                );
+            }
+        },
+        didParseCell: function (data) {
+            if (
+                data.column.index === 5 &&
+                typeof data.cell.raw === 'string' &&
+                data.cell.raw.startsWith('data:image')
+            ) {
+                data.cell.text = [''];
+            }
+        }
+    });
+
+    doc.save('Laporan Masuk.pdf');
+});
     </script>
     <script>
         feather.replace();
